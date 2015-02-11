@@ -7,7 +7,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.*;
-import android.util.Log;
 
 
 public class MainActivity extends ActionBarActivity  {
