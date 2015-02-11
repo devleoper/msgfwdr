@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">msgfwdr</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="app_name">Message Forwarder.</string>
+    <string name="URL">POST request URL</string>
+    <string name="done">Save</string>
     <string name="action_settings">Settings</string>
 
 </resources>
