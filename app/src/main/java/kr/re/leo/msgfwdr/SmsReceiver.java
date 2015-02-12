@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.widget.Toast;
@@ -28,6 +29,39 @@ public class SmsReceiver extends BroadcastReceiver {
     static final String ACTION = "android.provider.Telephony.SMS_RECEIVED";
     public static final String PREFS_NAME = "SmsForwarderPrefs";
 
+    private class ProcessPOSTrequest extends AsyncTask {
+
+        @Override
+        protected String doInBackground(Object[] params) {
+            String post_url = (String) params[0];
+            List<NameValuePair> postData = (List<NameValuePair>) params[1];
+
+            HttpClient client = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(post_url);
+
+            try {
+                httppost.setEntity(new UrlEncodedFormEntity(postData, "UTF-8"));
+                HttpResponse response = client.execute(httppost);
+
+                int res_code = response.getStatusLine().getStatusCode();
+
+                if (res_code == 200)
+                    return null;
+                else
+                    return String.valueOf(res_code);
+
+            } catch (IOException e) {
+                return e.toString();
+            }
+
+        }
+
+        private void onPostExecute(String result) {
+            //
+        }
+
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(ACTION)) {
@@ -40,7 +74,7 @@ public class SmsReceiver extends BroadcastReceiver {
             if (pdusObj == null)
                 return;
 
-            HttpClient client = new DefaultHttpClient();
+
             SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
             String post_url = settings.getString("postUri", "");
 
@@ -50,38 +84,34 @@ public class SmsReceiver extends BroadcastReceiver {
                 return;
             }
 
-            HttpPost httppost = new HttpPost(post_url);
+
 
             SmsMessage[] smsMessages = new SmsMessage[pdusObj.length];
             for (int i = 0; i < pdusObj.length; i++) {
                 smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdusObj[i]);
-                try {
-                    List<NameValuePair> postData = new ArrayList<NameValuePair>(2);
 
-                    SmsMessage message = smsMessages[i];
-                    postData.add(new BasicNameValuePair("message[sender]", message.getOriginatingAddress()));
+                List<NameValuePair> postData = new ArrayList<NameValuePair>(2);
 
-                    postData.add(new BasicNameValuePair("message[text]", message.getMessageBody()));
-                    httppost.setEntity(new UrlEncodedFormEntity(postData, "UTF-8"));
+                SmsMessage message = smsMessages[i];
+                postData.add(new BasicNameValuePair("message[sender]", message.getOriginatingAddress()));
 
-                    HttpResponse response = client.execute(httppost);
+                postData.add(new BasicNameValuePair("message[text]", message.getMessageBody()));
 
-                    int res_code = response.getStatusLine().getStatusCode();
-                    if (res_code == 200)
-                        Toast.makeText(context,
-                                context.getString(R.string.successfully_sent), 0
-                        ).show();
-                    else
-                        Toast.makeText(context,
-                            context.getString(R.string.failed_with_HTTP_code, res_code), 0
-                        ).show();
+                new ProcessPOSTrequest().execute(post_url, postData);
 
-                } catch (IOException e) {
-                    Toast.makeText(context,
-                         context.getString(R.string.failed_with_exception, e.toString()), 0
-                    ).show();
-                }
+
+
+                    //Toast.makeText(context,
+                    //        context.getString(R.string.successfully_sent), 0
+                    //).show();
             }
+
         }
+
+
+
+
     }
+
+
 }
