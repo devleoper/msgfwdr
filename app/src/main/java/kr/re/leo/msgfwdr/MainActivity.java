@@ -33,7 +33,7 @@ public class MainActivity extends ActionBarActivity  {
                 editor.putString("postUri", t.getText().toString());
                 editor.commit();
 
-                Toast.makeText(getApplicationContext(), "Saved!", 0).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.saved), 0).show();
             }
         });
 

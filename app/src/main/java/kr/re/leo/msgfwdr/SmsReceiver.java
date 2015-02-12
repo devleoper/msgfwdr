@@ -47,7 +47,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
             if (post_url.equals(""))
             {
-                Toast.makeText(context, "Please setup URL." , 0).show();
+                Toast.makeText(context, context.getString(R.string.please_url), 0).show();
                 return;
             }
 
@@ -67,11 +67,20 @@ public class SmsReceiver extends BroadcastReceiver {
 
                     HttpResponse response = client.execute(httppost);
 
-                    Toast.makeText(context,
-                            String.format("Query sent. code: %d", response.getStatusLine().getStatusCode())
-                            , 0).show();
+                    int res_code = response.getStatusLine().getStatusCode();
+                    if (res_code == 200)
+                        Toast.makeText(context,
+                                context.getString(R.string.successfully_sent), 0
+                        ).show();
+                    else
+                        Toast.makeText(context,
+                            context.getString(R.string.failed_with_HTTP_code, res_code), 0
+                        ).show();
+
                 } catch (IOException e) {
-                    Toast.makeText(context, "Failed: " + e.toString() , 0).show();
+                    Toast.makeText(context,
+                         context.getString(R.string.failed_with_exception, e.toString()), 0
+                    ).show();
                 }
             }
         }
