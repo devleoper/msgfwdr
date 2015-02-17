@@ -1,5 +1,7 @@
 package kr.re.leo.msgfwdr;
 
+import android.app.NotificationManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -16,6 +18,12 @@ public class MainActivity extends ActionBarActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // 서비스 시작
+        startService(new Intent(this, SmsReceiveService.class));
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(1);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         String post_url = settings.getString("postUri", "");

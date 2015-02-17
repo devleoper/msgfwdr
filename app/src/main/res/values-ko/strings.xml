@@ -6,8 +6,7 @@
     <string name="done">저장</string>
     <string name="please_url">요청을 넘길 URL을 설정해주세요.</string>
     <string name="successfully_sent">요청이 성공적으로 전송되었습니다!</string>
-    <string name="failed_with_HTTP_code">실패했습니다. HTTP 코드: %d</string>
-    <string name="failed_with_exception">실패했습니다: %s</string>
     <string name="saved">저장되었습니다!</string>
+    <string name="failed">요청 전송 실패.</string>
 
 </resources>

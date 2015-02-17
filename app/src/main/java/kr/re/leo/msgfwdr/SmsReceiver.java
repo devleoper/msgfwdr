@@ -1,12 +1,17 @@
 package kr.re.leo.msgfwdr;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsMessage;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -29,7 +34,19 @@ public class SmsReceiver extends BroadcastReceiver {
     static final String ACTION = "android.provider.Telephony.SMS_RECEIVED";
     public static final String PREFS_NAME = "SmsForwarderPrefs";
 
-    private class ProcessPOSTrequest extends AsyncTask {
+    private class ProcessPOSTRequest extends AsyncTask {
+        private String content =  null;
+        private boolean error = false;
+
+        private Context mContext;
+        private int NOTIFICATION_ID = 1;
+        private Notification mNotification;
+        private NotificationManager mNotificationManager;
+
+        public ProcessPOSTRequest(Context context){
+            this.mContext = context;
+            mNotificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        }
 
         @Override
         protected String doInBackground(Object[] params) {
@@ -45,19 +62,50 @@ public class SmsReceiver extends BroadcastReceiver {
 
                 int res_code = response.getStatusLine().getStatusCode();
 
-                if (res_code == 200)
-                    return null;
-                else
-                    return String.valueOf(res_code);
+                if (res_code == 200){
+                    Log.w("HTTP", "HTTP code 200");
+                    content = "HTTP code 200";
+                } else {
+                    Log.e("HTTP", "HTTP code " + String.valueOf(res_code));
 
+                    error = true;
+                    content = "HTTP code " + String.valueOf(res_code);
+                    cancel(true);
+                }
             } catch (IOException e) {
-                return e.toString();
+                Log.e("HTTP", "HTTP Error: " + e.toString() );
+                error = true;
+                content = e.toString();
+                cancel(true);
             }
 
+            return content;
         }
 
-        private void onPostExecute(String result) {
-            //
+        @Override
+        protected void onPostExecute(Object o) {
+            if (error) {
+                createNotification(mContext.getString(R.string.failed),content);
+            } else {
+                createNotification(mContext.getString(R.string.app_name), mContext.getString(R.string.successfully_sent));
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            createNotification(mContext.getString(R.string.failed),content);
+        }
+
+        private void createNotification(String contentTitle, String contentText) {
+            Intent intent = new Intent(mContext, MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
+            mNotification = builder.setSmallIcon(R.drawable.ic_launcher).setTicker(content)
+                    .setAutoCancel(true).setContentTitle(contentTitle)
+                    .setContentText(contentText).setContentIntent(pendingIntent).build();
+
+            mNotificationManager.notify(1, mNotification);
         }
 
     }
@@ -97,13 +145,8 @@ public class SmsReceiver extends BroadcastReceiver {
 
                 postData.add(new BasicNameValuePair("message[text]", message.getMessageBody()));
 
-                new ProcessPOSTrequest().execute(post_url, postData);
+                new ProcessPOSTRequest(context).execute(post_url, postData);
 
-
-
-                    //Toast.makeText(context,
-                    //        context.getString(R.string.successfully_sent), 0
-                    //).show();
             }
 
         }

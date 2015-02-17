@@ -5,9 +5,8 @@
     <string name="URL">POST request URL</string>
     <string name="done">Save</string>
     <string name="please_url">Please setup URL.</string>
-    <string name="successfully_sent">Reques Sent!</string>
-    <string name="failed_with_HTTP_code">Failed. HTTP code: %d</string>
-    <string name="failed_with_exception">Failed: %s</string>
+    <string name="successfully_sent">Request Sent!</string>
+    <string name="failed">Request Failed.</string>
     <string name="saved">Saved!</string>
 
 </resources>
